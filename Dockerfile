@@ -1,4 +1,5 @@
 FROM golang:1.15.7 AS builder
+LABEL org.opencontainers.image.source=https://github.com/dotWee/prometheus-nextcloud-exporter
 
 WORKDIR /build
 
