@@ -1,6 +1,7 @@
 package main
 
 import (
+	"crypto/tls"
 	"fmt"
 	"net/http"
 	"time"
@@ -36,7 +37,7 @@ var (
 		nil, nil)
 	freeSpaceDesc = prometheus.NewDesc(
 		metricPrefix+"free_space_bytes",
-		"Number of bytes of free space on the instance.",
+		"Free disk space in data directory in bytes.",
 		nil, nil)
 	sharesDesc = prometheus.NewDesc(
 		metricPrefix+"shares_total",
@@ -79,18 +80,24 @@ type nextcloudCollector struct {
 	scrapeErrorsMetric prometheus.Counter
 }
 
-func newCollector(infoURL, username, password string, timeout time.Duration, userAgent string) *nextcloudCollector {
+func newCollector(infoURL, username, password string, timeout time.Duration, userAgent string, tlsSkipVerify bool) *nextcloudCollector {
 	return &nextcloudCollector{
 		infoURL:  infoURL,
 		username: username,
 		password: password,
 		client: &http.Client{
 			Timeout: timeout,
+			Transport: &http.Transport{
+				TLSClientConfig: &tls.Config{
+					// disable TLS certification verification, if desired
+					InsecureSkipVerify: tlsSkipVerify,
+				},
+			},
 		},
 		userAgent: userAgent,
 		upMetric: prometheus.NewGauge(prometheus.GaugeOpts{
 			Name: metricPrefix + "up",
-			Help: "Shows if nextcloud is deemed up by the collector.",
+			Help: "Indicates if the metrics could be scraped by the exporter.",
 		}),
 		authErrorsMetric: prometheus.NewCounter(prometheus.CounterOpts{
 			Name: metricPrefix + "auth_errors_total",

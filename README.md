@@ -47,7 +47,9 @@ Usage of nextcloud-exporter:
   -p, --password string      Password for connecting to Nextcloud.
   -s, --server string        URL to Nextcloud server.
   -t, --timeout duration     Timeout for getting server info document. (default 5s)
+      --tls-skip-verify      Skip certificate verification of Nextcloud server.
   -u, --username string      Username for connecting to Nextcloud.
+  -V, --version              Show version information and exit.
 ```
 
 After starting the server will offer the metrics on the `/metrics` endpoint, which can be used as a target for prometheus.
@@ -64,13 +66,14 @@ There are three methods of configuring the nextcloud-exporter (higher methods ta
 
 All settings can also be specified through environment variables:
 
-|    Environment variable    | Flag equivalent |
-| -------------------------: | :-------------- |
-|         `NEXTCLOUD_SERVER` | --server        |
-|       `NEXTCLOUD_USERNAME` | --username      |
-|       `NEXTCLOUD_PASSWORD` | --password      |
-| `NEXTCLOUD_LISTEN_ADDRESS` | --addr          |
-|        `NEXTCLOUD_TIMEOUT` | --timeout       |
+|     Environment variable    | Flag equivalent   |
+| --------------------------: | :---------------- |
+|          `NEXTCLOUD_SERVER` | --server          |
+|        `NEXTCLOUD_USERNAME` | --username        |
+|        `NEXTCLOUD_PASSWORD` | --password        |
+|  `NEXTCLOUD_LISTEN_ADDRESS` | --addr            |
+|         `NEXTCLOUD_TIMEOUT` | --timeout         |
+| `NEXTCLOUD_TLS_SKIP_VERIFY` | --tls-skip-verify |
 
 #### Configuration file
 
@@ -84,6 +87,7 @@ password: "example"
 # optional
 listenAddress: ":9205"
 timeout: "5s"
+tlsSkipVerify: false
 ```
 
 ### Password file
@@ -119,3 +123,27 @@ scrape_configs:
     static_configs:
       - targets: ['localhost:9205']
 ```
+
+### Exported metrics
+
+These metrics are exported by `nextcloud-exporter`:
+
+| name                                   | description                                                            |
+|----------------------------------------|------------------------------------------------------------------------|
+| nextcloud_active_users_total           | Number of active users for the last five minutes                       |
+| nextcloud_apps_installed_total         | Number of currently installed apps                                     |
+| nextcloud_apps_updates_available_total | Number of apps that have available updates                             |
+| nextcloud_auth_errors_total            | Counts number of authentication errors encountered by the collector    |
+| nextcloud_database_size_bytes          | Size of database in bytes as reported from engine                      |
+| nextcloud_exporter_info                | Contains meta information of the exporter. Value is always 1.          |
+| nextcloud_files_total                  | Number of files served by the instance                                 |
+| nextcloud_free_space_bytes             | Free disk space in data directory in bytes                             |
+| nextcloud_php_info                     | Contains meta information about PHP as labels. Value is always 1.      |
+| nextcloud_php_memory_limit_bytes       | Configured PHP memory limit in bytes                                   |
+| nextcloud_php_upload_max_size_bytes    | Configured maximum upload size in bytes                                |
+| nextcloud_scrape_errors_total          | Counts the number of scrape errors by this collector                   |
+| nextcloud_shares_federated_total       | Number of federated shares by direction `sent` / `received`            |
+| nextcloud_shares_total                 | Number of shares by type: <br> `authlink`: shared password protected links <br> `group`: shared groups <br>`link`: all shared links <br> `user`: shared users |
+| nextcloud_system_info                  | Contains meta information about Nextcloud as labels. Value is always 1.|
+| nextcloud_up                           | Indicates if the metrics could be scraped by the exporter: <br>`1`: successful<br>`0`: unsuccessful (server down, server/endpoint not reachable, invalid credentials, ...) |
+| nextcloud_users_total                  | Number of users of the instance                                        |
